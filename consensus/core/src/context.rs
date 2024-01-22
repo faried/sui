@@ -10,6 +10,8 @@ use crate::metrics::Metrics;
 
 #[cfg(test)]
 use crate::metrics::test_metrics;
+#[cfg(test)]
+use consensus_config::{NetworkKeyPair, ProtocolKeyPair};
 
 /// Context contains per-epoch configuration and metrics shared by all components
 /// of this authority.
@@ -46,16 +48,17 @@ impl Context {
     }
 
     #[cfg(test)]
-    pub(crate) fn new_for_test() -> Self {
-        let (committee, _) = Committee::new_for_test(0, vec![1, 1, 1, 1]);
+    pub(crate) fn new_for_test() -> (Self, Vec<(NetworkKeyPair, ProtocolKeyPair)>) {
+        let (committee, keypairs) = Committee::new_for_test(0, vec![1, 1, 1, 1]);
         let metrics = test_metrics();
-        Context::new(
+        let context = Context::new(
             AuthorityIndex::new_for_test(0),
             committee,
             Parameters::default(),
             ProtocolConfig::get_for_min_version(),
             metrics,
-        )
+        );
+        (context, keypairs)
     }
 
     #[cfg(test)]
