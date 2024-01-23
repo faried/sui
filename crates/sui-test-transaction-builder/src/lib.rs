@@ -51,11 +51,22 @@ impl TestTransactionBuilder {
     }
 
     pub fn move_call(
+        self,
+        package_id: ObjectID,
+        module: &'static str,
+        function: &'static str,
+        args: Vec<CallArg>,
+    ) -> Self {
+        self.move_call_with_type_args(package_id, module, function, args, vec![])
+    }
+
+    pub fn move_call_with_type_args(
         mut self,
         package_id: ObjectID,
         module: &'static str,
         function: &'static str,
         args: Vec<CallArg>,
+        type_args: Vec<TypeTag>,
     ) -> Self {
         assert!(matches!(self.test_data, TestTransactionData::Empty));
         self.test_data = TestTransactionData::Move(MoveData {
@@ -63,7 +74,7 @@ impl TestTransactionBuilder {
             module,
             function,
             args,
-            type_args: vec![],
+            type_args,
         });
         self
     }

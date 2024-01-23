@@ -700,6 +700,7 @@ pub trait SuiData: Sized {
         -> Result<Self, anyhow::Error>;
     fn try_from_package(package: MovePackage) -> Result<Self, anyhow::Error>;
     fn try_as_move(&self) -> Option<&Self::ObjectType>;
+    fn try_into_move(self) -> Option<Self::ObjectType>;
     fn try_as_package(&self) -> Option<&Self::PackageType>;
     fn type_(&self) -> Option<&StructTag>;
 }
@@ -725,6 +726,13 @@ impl SuiData for SuiRawData {
     }
 
     fn try_as_move(&self) -> Option<&Self::ObjectType> {
+        match self {
+            Self::MoveObject(o) => Some(o),
+            Self::Package(_) => None,
+        }
+    }
+
+    fn try_into_move(self) -> Option<Self::ObjectType> {
         match self {
             Self::MoveObject(o) => Some(o),
             Self::Package(_) => None,
@@ -774,6 +782,13 @@ impl SuiData for SuiParsedData {
     }
 
     fn try_as_move(&self) -> Option<&Self::ObjectType> {
+        match self {
+            Self::MoveObject(o) => Some(o),
+            Self::Package(_) => None,
+        }
+    }
+
+    fn try_into_move(self) -> Option<Self::ObjectType> {
         match self {
             Self::MoveObject(o) => Some(o),
             Self::Package(_) => None,
