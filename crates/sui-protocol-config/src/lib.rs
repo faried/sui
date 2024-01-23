@@ -12,7 +12,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 35;
+const MAX_PROTOCOL_VERSION: u64 = 36;
 
 // Record history of protocol version allocations here:
 //
@@ -105,7 +105,7 @@ const MAX_PROTOCOL_VERSION: u64 = 35;
 // Version 34: Framework changes for random beacon.
 // Version 35: Add poseidon hash function.
 //             Enable coin deny list.
-//             Enable group operations native functions in devnet.
+// Version 36: Enable group operations native functions in devnet.
 
 #[derive(Copy, Clone, Debug, Hash, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ProtocolVersion(u64);
@@ -1829,7 +1829,8 @@ impl ProtocolConfig {
                     }
 
                     cfg.feature_flags.enable_coin_deny_list = true;
-
+                }
+                36 => {
                     // Only enable group ops on devnet
                     if chain != Chain::Mainnet && chain != Chain::Testnet {
                         cfg.feature_flags.enable_group_ops_native_functions = true;
