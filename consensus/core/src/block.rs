@@ -36,7 +36,7 @@ pub fn timestamp_utc_ms() -> BlockTimestampMs {
 /// The transaction serialised bytes
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Default, Debug)]
 pub struct Transaction {
-    data: bytes::Bytes,
+    data: Bytes,
 }
 
 #[allow(dead_code)]
@@ -86,41 +86,41 @@ impl Block {
 
 #[enum_dispatch]
 pub trait BlockAPI {
+    fn epoch(&self) -> Epoch;
     fn round(&self) -> Round;
     fn author(&self) -> AuthorityIndex;
     fn timestamp_ms(&self) -> BlockTimestampMs;
     fn ancestors(&self) -> &[BlockRef];
-    fn payload(&self) -> &[Transaction];
-    fn epoch(&self) -> Epoch;
+    fn transactions(&self) -> &[Transaction];
 }
 
 #[derive(Clone, Default, Deserialize, Serialize)]
 pub struct BlockV1 {
+    epoch: Epoch,
     round: Round,
     author: AuthorityIndex,
     // TODO: during verification ensure that timestamp_ms >= ancestors.timestamp
     timestamp_ms: BlockTimestampMs,
     ancestors: Vec<BlockRef>,
-    payload: Vec<Transaction>,
-    epoch: Epoch,
+    transactions: Vec<Transaction>,
 }
 
 impl BlockV1 {
     #[allow(dead_code)]
     pub(crate) fn new(
+        epoch: Epoch,
         round: Round,
         author: AuthorityIndex,
         timestamp_ms: BlockTimestampMs,
         ancestors: Vec<BlockRef>,
-        payload: Vec<Transaction>,
-        epoch: Epoch,
+        transactions: Vec<Transaction>,
     ) -> BlockV1 {
         Self {
             round,
             author,
             timestamp_ms,
             ancestors,
-            payload,
+            transactions,
             epoch,
         }
     }
@@ -132,7 +132,7 @@ impl BlockV1 {
             author,
             timestamp_ms: 0,
             ancestors: vec![],
-            payload: vec![],
+            transactions: vec![],
             epoch,
         }
     }
@@ -155,8 +155,8 @@ impl BlockAPI for BlockV1 {
         &self.ancestors
     }
 
-    fn payload(&self) -> &[Transaction] {
-        &self.payload
+    fn transactions(&self) -> &[Transaction] {
+        &self.transactions
     }
 
     fn epoch(&self) -> Epoch {
@@ -288,7 +288,7 @@ impl fmt::Debug for Slot {
 #[derive(Deserialize, Serialize)]
 pub(crate) struct SignedBlock {
     inner: Block,
-    signature: bytes::Bytes,
+    signature: Bytes,
 }
 
 impl SignedBlock {
@@ -303,7 +303,7 @@ impl SignedBlock {
     }
 
     /// Serialises the block using the bcs serializer
-    pub(crate) fn serialize(&self) -> Result<bytes::Bytes, bcs::Error> {
+    pub(crate) fn serialize(&self) -> Result<Bytes, bcs::Error> {
         let bytes = bcs::to_bytes(self)?;
         Ok(bytes.into())
     }
@@ -317,15 +317,12 @@ pub(crate) struct VerifiedBlock {
 
     // Cached Block digest and serialized SignedBlock, to avoid re-computing these values.
     digest: BlockDigest,
-    serialized: bytes::Bytes,
+    serialized: Bytes,
 }
 
 impl VerifiedBlock {
     /// Creates VerifiedBlock from verified SignedBlock and its serialized bytes.
-    pub fn new_verified(
-        signed_block: SignedBlock,
-        serialized: bytes::Bytes,
-    ) -> Result<Self, bcs::Error> {
+    pub fn new_verified(signed_block: SignedBlock, serialized: Bytes) -> Result<Self, bcs::Error> {
         let digest = Self::compute_digest(&signed_block.inner)?;
         Ok(VerifiedBlock {
             block: Arc::new(signed_block),
@@ -349,7 +346,7 @@ impl VerifiedBlock {
             inner: block,
             signature: Default::default(),
         };
-        let serialized: bytes::Bytes = bcs::to_bytes(&signed_block)
+        let serialized: Bytes = bcs::to_bytes(&signed_block)
             .expect("Serialization should not fail")
             .into();
         VerifiedBlock {
@@ -373,7 +370,7 @@ impl VerifiedBlock {
     }
 
     /// Returns the serialized block with signature.
-    pub fn serialized(&self) -> &bytes::Bytes {
+    pub fn serialized(&self) -> &Bytes {
         &self.serialized
     }
 
