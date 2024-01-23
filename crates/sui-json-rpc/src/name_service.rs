@@ -48,7 +48,7 @@ pub struct Table<K, V> {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Domain {
-    labels: Vec<String>,
+    pub labels: Vec<String>,
 }
 
 impl Domain {
@@ -58,6 +58,14 @@ impl Domain {
             module: NAME_SERVICE_DOMAIN_MODULE.to_owned(),
             name: NAME_SERVICE_DOMAIN_STRUCT.to_owned(),
             type_params: vec![],
+        }
+    }
+
+    /// Derive the parent domain for a given domain
+    /// E.g. `test.example.sui` -> `example.sui`
+    pub fn parent(&self) -> Domain {
+        Domain {
+            labels: self.labels[0..(self.labels.len() - 1)].to_vec(),
         }
     }
 }
