@@ -9,8 +9,12 @@ module sui::group_ops {
 
     friend sui::bls12381;
 
-    const EInvalidInput: u64 = 0;
-    const EInvalidBufferLength: u64 = 1;
+    #[allow(unused_const)]
+    const ENotSupported: u64 = 0; // Operation is not supported on the network.
+    const EInvalidInput: u64 = 1;
+    #[allow(unused_const)]
+    const EInputTooLong: u64 = 2;
+    const EInvalidBufferLength: u64 = 3;
 
     /////////////////////////////////////////////////////
     ////// Generic functions for group operations. //////
@@ -57,6 +61,7 @@ module sui::group_ops {
         Element<G> { bytes: internal_hash_to(type, m) }
     }
 
+    /// Aborts with `EInputTooLong` if the vectors are too long.
     public(friend) fun multi_scalar_multiplication<S, G>(type: u8, scalars: &vector<Element<S>>, elements: &vector<Element<G>>): Element<G> {
         assert!(vector::length(scalars) == vector::length(elements), EInvalidInput);
         assert!(vector::length(scalars) > 0, EInvalidInput);

@@ -7,8 +7,9 @@ use fastcrypto::groups::{
     bls12381 as bls, GroupElement, HashToGroupElement, MultiScalarMul, Pairing,
 };
 use fastcrypto::serde_helpers::ToFromByteArray;
-use move_binary_format::errors::PartialVMResult;
+use move_binary_format::errors::{PartialVMError, PartialVMResult};
 use move_core_types::gas_algebra::InternalGas;
+use move_core_types::vm_status::StatusCode;
 use move_vm_runtime::native_charge_gas_early_exit;
 use move_vm_runtime::native_functions::NativeContext;
 use move_vm_types::{
@@ -20,8 +21,9 @@ use move_vm_types::{
 use smallvec::smallvec;
 use std::collections::VecDeque;
 
-pub const INVALID_INPUT_ERROR: u64 = 0;
-pub const NOT_SUPPORTED_ERROR: u64 = 1;
+pub const NOT_SUPPORTED_ERROR: u64 = 0;
+pub const INVALID_INPUT_ERROR: u64 = 1;
+pub const INPUT_TOO_LONG_ERROR: u64 = 2;
 
 fn is_supported(context: &NativeContext) -> bool {
     context
@@ -71,6 +73,8 @@ pub struct GroupOpsCostParams {
     // cost that is multiplied with the approximated number of additions
     pub bls12381_g1_msm_base_cost_per_input: Option<InternalGas>,
     pub bls12381_g2_msm_base_cost_per_input: Option<InternalGas>,
+    // limit the length of the input vectors for MSM
+    pub bls12381_msm_max_len: Option<u32>,
     // costs for decode, pairing, and encode output
     pub bls12381_pairing_cost: Option<InternalGas>,
 }
@@ -549,6 +553,7 @@ fn multi_scalar_mul<G, const SCALAR_SIZE: usize, const POINT_SIZE: usize>(
     point_decode_cost: Option<InternalGas>,
     base_cost: Option<InternalGas>,
     base_cost_per_addition: Option<InternalGas>,
+    max_len: u32,
     scalars: &Vec<u8>,
     points: &Vec<u8>,
 ) -> PartialVMResult<NativeResult>
@@ -563,6 +568,10 @@ where
         || points.len() / POINT_SIZE != scalars.len() / SCALAR_SIZE
     {
         return Ok(NativeResult::err(context.gas_used(), INVALID_INPUT_ERROR));
+    }
+
+    if points.len() / POINT_SIZE > max_len as usize {
+        return Ok(NativeResult::err(context.gas_used(), INPUT_TOO_LONG_ERROR));
     }
 
     native_charge_gas_early_exit_option!(
@@ -634,6 +643,11 @@ pub fn internal_multi_scalar_mul(
         .group_ops_cost_params
         .clone();
 
+    let max_len = cost_params.bls12381_msm_max_len.ok_or_else(|| {
+        PartialVMError::new(StatusCode::UNKNOWN_INVARIANT_VIOLATION_ERROR)
+            .with_message("Max len for MSM is not set".to_string())
+    })?;
+
     // TODO: can potentially improve performance when some of the points are the generator.
     match Groups::from_u8(group_type) {
         Some(Groups::BLS12381G1) => multi_scalar_mul::<
@@ -646,6 +660,7 @@ pub fn internal_multi_scalar_mul(
             cost_params.bls12381_decode_g1_cost,
             cost_params.bls12381_g1_msm_base_cost,
             cost_params.bls12381_g1_msm_base_cost_per_input,
+            max_len,
             scalars.as_ref(),
             elements.as_ref(),
         ),
@@ -659,6 +674,7 @@ pub fn internal_multi_scalar_mul(
             cost_params.bls12381_decode_g2_cost,
             cost_params.bls12381_g2_msm_base_cost,
             cost_params.bls12381_g2_msm_base_cost_per_input,
+            max_len,
             scalars.as_ref(),
             elements.as_ref(),
         ),

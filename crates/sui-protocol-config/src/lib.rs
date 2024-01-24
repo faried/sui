@@ -883,6 +883,7 @@ pub struct ProtocolConfig {
     group_ops_bls12381_g2_msm_base_cost: Option<u64>,
     group_ops_bls12381_g1_msm_base_cost_per_input: Option<u64>,
     group_ops_bls12381_g2_msm_base_cost_per_input: Option<u64>,
+    group_ops_bls12381_msm_max_len: Option<u32>,
     group_ops_bls12381_pairing_cost: Option<u64>,
 
     // hmac::hmac_sha3_256
@@ -1520,6 +1521,7 @@ impl ProtocolConfig {
             group_ops_bls12381_g2_msm_base_cost: None,
             group_ops_bls12381_g1_msm_base_cost_per_input: None,
             group_ops_bls12381_g2_msm_base_cost_per_input: None,
+            group_ops_bls12381_msm_max_len: None,
             group_ops_bls12381_pairing_cost: None,
 
             // zklogin::check_zklogin_id
@@ -1863,6 +1865,7 @@ impl ProtocolConfig {
                         cfg.group_ops_bls12381_g2_msm_base_cost = Some(52);
                         cfg.group_ops_bls12381_g1_msm_base_cost_per_input = Some(52);
                         cfg.group_ops_bls12381_g2_msm_base_cost_per_input = Some(52);
+                        cfg.group_ops_bls12381_msm_max_len = Some(32);
                         cfg.group_ops_bls12381_pairing_cost = Some(52);
                     }
                 }

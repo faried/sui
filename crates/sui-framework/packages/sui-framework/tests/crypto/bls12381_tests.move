@@ -427,7 +427,7 @@ module sui::bls12381_tests {
         let expected_result = bls12381::g1_identity();
         let scalars: vector<group_ops::Element<bls12381::Scalar>> = vector::empty();
         let elements: vector<group_ops::Element<bls12381::G1>> = vector::empty();
-        while (i < 20) {
+        while (i < 33) {
             let scalar = bls12381::scalar_from_u64(i);
             vector::push_back(&mut scalars, scalar);
             vector::push_back(&mut elements, bls12381::g1_identity());
@@ -454,6 +454,28 @@ module sui::bls12381_tests {
         let elements: vector<group_ops::Element<bls12381::G1>> = vector::empty();
         vector::push_back(&mut elements, bls12381::g1_generator());
         let _ = bls12381::g1_multi_scalar_multiplication(&scalars, &elements);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = group_ops::EInputTooLong)]
+    fun test_msm_g1_too_long() {
+        let i = 1;
+        let expected_result = bls12381::g1_identity();
+        let g = bls12381::g1_generator();
+        let scalars: vector<group_ops::Element<bls12381::Scalar>> = vector::empty();
+        let elements: vector<group_ops::Element<bls12381::G1>> = vector::empty();
+        while (i < 34) { // this limit is defined in the protocol config
+            let base_scalar = bls12381::scalar_from_u64(i);
+            let base = bls12381::g1_mul(&base_scalar, &g);
+            let exponent_scalar = bls12381::scalar_from_u64(i+100);
+            let base_exp = bls12381::g1_mul(&exponent_scalar, &base);
+            vector::push_back(&mut elements, base);
+            vector::push_back(&mut scalars, exponent_scalar);
+            expected_result = bls12381::g1_add(&expected_result, &base_exp);
+            i = i + 1;
+        };
+        let result = bls12381::g1_multi_scalar_multiplication(&scalars, &elements);
+        assert!(group_ops::equal(&result, &expected_result), 0);
     }
 
     #[test]

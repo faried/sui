@@ -67,11 +67,20 @@ Generic Move and native functions for group operations.
 ## Constants
 
 
+<a name="0x2_group_ops_EInputTooLong"></a>
+
+
+
+<pre><code><b>const</b> <a href="group_ops.md#0x2_group_ops_EInputTooLong">EInputTooLong</a>: u64 = 2;
+</code></pre>
+
+
+
 <a name="0x2_group_ops_EInvalidBufferLength"></a>
 
 
 
-<pre><code><b>const</b> <a href="group_ops.md#0x2_group_ops_EInvalidBufferLength">EInvalidBufferLength</a>: u64 = 1;
+<pre><code><b>const</b> <a href="group_ops.md#0x2_group_ops_EInvalidBufferLength">EInvalidBufferLength</a>: u64 = 3;
 </code></pre>
 
 
@@ -80,7 +89,16 @@ Generic Move and native functions for group operations.
 
 
 
-<pre><code><b>const</b> <a href="group_ops.md#0x2_group_ops_EInvalidInput">EInvalidInput</a>: u64 = 0;
+<pre><code><b>const</b> <a href="group_ops.md#0x2_group_ops_EInvalidInput">EInvalidInput</a>: u64 = 1;
+</code></pre>
+
+
+
+<a name="0x2_group_ops_ENotSupported"></a>
+
+
+
+<pre><code><b>const</b> <a href="group_ops.md#0x2_group_ops_ENotSupported">ENotSupported</a>: u64 = 0;
 </code></pre>
 
 
@@ -282,6 +300,7 @@ Generic Move and native functions for group operations.
 
 ## Function `multi_scalar_multiplication`
 
+Aborts with <code><a href="group_ops.md#0x2_group_ops_EInputTooLong">EInputTooLong</a></code> if the vectors are too long.
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="group_ops.md#0x2_group_ops_multi_scalar_multiplication">multi_scalar_multiplication</a>&lt;S, G&gt;(type: u8, scalars: &<a href="dependencies/move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="group_ops.md#0x2_group_ops_Element">group_ops::Element</a>&lt;S&gt;&gt;, elements: &<a href="dependencies/move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="group_ops.md#0x2_group_ops_Element">group_ops::Element</a>&lt;G&gt;&gt;): <a href="group_ops.md#0x2_group_ops_Element">group_ops::Element</a>&lt;G&gt;
