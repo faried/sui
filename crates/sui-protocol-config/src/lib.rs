@@ -1861,8 +1861,8 @@ impl ProtocolConfig {
                         cfg.group_ops_bls12381_g2_hash_to_cost_per_byte = Some(2);
                         cfg.group_ops_bls12381_g1_msm_base_cost = Some(52);
                         cfg.group_ops_bls12381_g2_msm_base_cost = Some(52);
-                        cfg.group_ops_bls12381_g1_msm_base_cost_per_input = Some(2);
-                        cfg.group_ops_bls12381_g2_msm_base_cost_per_input = Some(2);
+                        cfg.group_ops_bls12381_g1_msm_base_cost_per_input = Some(52);
+                        cfg.group_ops_bls12381_g2_msm_base_cost_per_input = Some(52);
                         cfg.group_ops_bls12381_pairing_cost = Some(52);
                     }
                 }
