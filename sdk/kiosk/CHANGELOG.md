@@ -1,5 +1,14 @@
 # @mysten/kiosk
 
+## 0.8.2
+
+### Patch Changes
+
+- a3971c3524: Fixes `lock` function arguments. `itemId` is replaced by `item`, which accepts an ObjectArgument instead of a string. `itemId` is still supported but deprecated, and will be removed in future versions.
+- Updated dependencies [9a14e61db4]
+- Updated dependencies [13e922d9b1]
+  - @mysten/sui.js@0.49.2
+
 ## 0.8.1
 
 ### Patch Changes
